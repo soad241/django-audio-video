@@ -1,0 +1,42 @@
+<script type="text/javascript" src="/static/audio_video/flowplayer/flowplayer.js"></script>
+
+<script type="text/javascript">
+$(function () {
+    flowplayer('video-{{ video.id }}',
+        {
+            src: '{{ media_url }}audio_video/flowplayer/flowplayer.swf',
+            width: {{ metadata.width }},
+            height: {{ metadata.height|add:"24" }}
+        },
+        {
+            clip: {
+                url: '{{ media_url }}{{ video.flv_file }}',
+                scaling: 'orig',
+                accelerated: true,
+                autoPlay: true,
+                provider: '{{ provider }}'
+            },
+            plugins: {
+                {% ifequal provider 'lighttpd' %}
+                lighttpd: {
+                    url: '{{ media_url }}audio_video/flowplayer/flowplayer.pseudostreaming.swf'
+                }
+                {% endifequal %}
+            }
+        }
+    );
+});
+</script>
+
+<div id="video-{{ video.id }}"
+     class="video"
+     href="{{ media_url }}{{ video.flv_video }}"
+     style="width: {{ metadata.width }}px;
+            height: {{ metadata.height|add:"24" }}px;
+            background-image: url({{ media_url }}{{ video.splash_image }})">
+  <img src="{{ media_url }}audio_video/flowplayer/play_large.png" alt="Play this video" />
+  <div class="info">
+    {{ video.title }}
+    {% if metadata.duration %}<span>duration: {{ metadata.duration }}</span>{% endif %}
+  </div>
+</div>

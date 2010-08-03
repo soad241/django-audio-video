@@ -23,7 +23,6 @@
 
 
 
-
 ###
 ### define rendering helper method
 ###

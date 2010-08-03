@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load gencal content %}
+
+{% block content %}
+
+  {% get_billboard public %}
+  {% if billboard %}
+    BILLBOARD: {{ billboard }}
+  {% endif %}
+
+  <h2>Latest News</h2>
+
+  {% get_latest_news public %}
+  {% for item in latest_news %}
+    <h2>{{ item.title|safe }}</h2>
+    {% with item.post_date as date %}{{ date|date:"j" }}<sup>{{ date|date:"S" }}</sup><span class="month">{{ date|date:"M 'y" }}</span>{% endwith %}
+    {{ item.blurb|safe }}
+    {% if item.content %}<a href="{{ item.get_absolute_url }}">Read more</a>{% endif %}{{ item.content }}
+  {% endfor %}
+{% endblock %}
+
+{% block sidebar %}
+  {% simple_gencal for content.Event on start_date in calendar_date with calendar.html %}
+{% endblock %}

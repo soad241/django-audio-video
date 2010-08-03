@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load video media_helpers %}
+
+{% block content %}
+
+<h2>{{ video.title }}</h2>
+
+{% embed_video video %}
+{% endblock %}

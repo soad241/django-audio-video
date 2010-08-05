@@ -1,5 +1,4 @@
 import settings
-
 import os
 import re
 import subprocess
@@ -14,7 +13,10 @@ def make_flv_for(instance):
     src_path = os.path.join(settings.MEDIA_ROOT, src_name)
     dest_name = os.path.join(instance.flv_file.field.upload_to, os.path.basename(path) + '.flv')
     dest_path = os.path.join(settings.MEDIA_ROOT, dest_name)
-
+    try:
+        os.makedirs(os.path.dirname(dest_path))
+    except:
+        pass
     if ext == '.flv':
         # File is already in FLV format, just copy it
         shutil.copy2(src_path, dest_path)

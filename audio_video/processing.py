@@ -4,6 +4,7 @@ import re
 import subprocess
 import shutil
 import datetime
+import time
 
 def make_flv_for(instance):
     """Create a Flash movie file for given Video model instance.
@@ -11,7 +12,8 @@ def make_flv_for(instance):
     src_name = instance.upload_file.name
     path, ext = os.path.splitext(src_name)
     src_path = os.path.join(settings.MEDIA_ROOT, src_name)
-    dest_name = os.path.join(instance.flv_file.field.upload_to, os.path.basename(path) + '.flv')
+    upload_to = time.strftime(instance.flv_file.field.upload_to)
+    dest_name = os.path.join(upload_to, os.path.basename(path) + '.flv')
     dest_path = os.path.join(settings.MEDIA_ROOT, dest_name)
     try:
         os.makedirs(os.path.dirname(dest_path))
@@ -44,10 +46,15 @@ def take_snapshot_for(instance):
     """
     flv = instance.flv_file
     path, ext = os.path.splitext(flv.name)
-    image_name = os.path.join(instance.splash_image.field.upload_to, os.path.basename(path) + '.jpg')
-
+    upload_to = time.strftime(instance.splash_image.field.upload_to)
+    image_name = os.path.join(upload_to, os.path.basename(path) + '.jpg')
+    
     inp = os.path.join(settings.MEDIA_ROOT, flv.name)
     outp = os.path.join(settings.MEDIA_ROOT, image_name)
+    try:
+        os.makedirs(os.path.dirname(outp))
+    except:
+        pass
 
     process = subprocess.call(['ffmpeg',
         '-i', inp,

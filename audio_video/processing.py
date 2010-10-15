@@ -7,6 +7,12 @@ import datetime
 import time
 import random
 
+class WrongFfmpegFormat(Exception):
+    def __init__(self, value):
+        self.vale = value
+    def __str__(self):
+        return repr(self.value)
+
 def make_flv_for(instance):
     """Create a Flash movie file for given Video model instance.
     """
@@ -36,6 +42,8 @@ def make_flv_for(instance):
             dest_path
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdoutdata, stderrdata = process.communicate()
+        if process == 1:
+            raise WrongFfmpegFormat('invalid video format')
 
     # Add FLV metadata to video file
     subprocess.call(['flvtool2', '-U', dest_path])
@@ -71,6 +79,9 @@ def take_snapshot_for(instance):
         '-f', 'image2',
         '-y', outp,
     ])
+    # there was a problem with the video, (not supported format)
+    if process == 1:
+        raise WrongFfmpegFormat('invalid video format')
     return image_name
 
 SPECS_RE = re.compile(r'Duration: (?P<duration>\d\d:\d\d:\d\d\.\d\d).+? bitrate: (?P<bitrate>\d+) kb/s.+? (?P<width>\d+)x(?P<height>\d+)', re.DOTALL)

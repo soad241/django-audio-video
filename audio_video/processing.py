@@ -5,6 +5,7 @@ import subprocess
 import shutil
 import datetime
 import time
+import random
 
 def make_flv_for(instance):
     """Create a Flash movie file for given Video model instance.
@@ -21,8 +22,7 @@ def make_flv_for(instance):
         pass
     if ext == '.flv':
         # File is already in FLV format, just copy it
-        shutil.copy2(src_path, dest_path)
-
+        shutil.copy2(src_path, dest_path)        
     else:
         # Call ffmpeg to convert video to FLV format
         process = subprocess.Popen(['ffmpeg',
@@ -55,6 +55,12 @@ def take_snapshot_for(instance):
         os.makedirs(os.path.dirname(outp))
     except:
         pass
+
+    try:
+        position = random.randint(1, instance.duration.seconds)
+    except:
+        position = 0
+    instance.auto_position = '%s' % position
 
     process = subprocess.call(['ffmpeg',
         '-i', inp,

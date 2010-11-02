@@ -2,7 +2,7 @@ from fields import VideoFileField, AudioFileField, DurationField
 from processing import get_video_specs
 from widgets import ReadOnlyWidget
 import signals
-
+import re
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -11,6 +11,20 @@ from flv_reader import FLVReader
 import datetime
 import os
 import subprocess
+
+def get_duration_from_video(video):
+    duration = video.flv_file._get_metadata()['duration']
+    duration_re = re.compile(r'(\d\d):(\d\d):(\d\d).(\d\d)')
+    m = duration_re.match(duration)
+    value = None
+    if m:
+        value = datetime.timedelta(
+            hours=int(m.group(1)),
+            minutes=int(m.group(2)),
+            seconds=int(m.group(3)) + int(m.group(4)) / 1000.)
+        return value
+    return None
+
 
 # Use django-tagging TagField if available and loaded,
 # otherwise substitude a dummy TagField.

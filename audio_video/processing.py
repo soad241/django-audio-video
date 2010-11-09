@@ -6,6 +6,14 @@ import shutil
 import datetime
 import time
 import random
+from django.conf import settings
+from django.core.mail import send_mail
+
+def mail_video_errors(procout, procerr):
+    message = '\nError:\n' +  procerr
+    message += '\nOutput:\n' + procout
+    send_mail('Video processing error', message, settings.SERVER_EMAIL, 
+              [a[1] for a in settings.ADMINS], fail_silently=False)
 
 class WrongFfmpegFormat(Exception):
     def __init__(self, value):
@@ -31,6 +39,19 @@ def make_flv_for(instance):
         shutil.copy2(src_path, dest_path)        
     else:
         # Call ffmpeg to convert video to FLV format
+        # process = subprocess.Popen(['ffmpeg',
+        #     '-i', src_path,
+        #     '-acodec', 'libmp3lame',
+        #     '-ar', '22050',
+        #     '-ab', '32768',
+        #     '-f', 'flv',
+        #     '-s', instance.size.as_pair,
+        #     '-y',
+        #     dest_path
+        # ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, )
+        import tempfile
+        tmpout = tempfile.NamedTemporaryFile(mode='rw+');
+        tmperr = tempfile.NamedTemporaryFile(mode='rw+');
         process = subprocess.Popen(['ffmpeg',
             '-i', src_path,
             '-acodec', 'libmp3lame',
@@ -40,9 +61,12 @@ def make_flv_for(instance):
             '-s', instance.size.as_pair,
             '-y',
             dest_path
-        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ], stdout=tmpout, stderr=tmperr)
         stdoutdata, stderrdata = process.communicate()
         if process == 1:
+            tmpout.seek(0)
+            tmperr.seek(0)
+            mail_video_errors(tmpout.read(), tmperr.read())
             raise WrongFfmpegFormat('invalid video format')
 
     # Add FLV metadata to video file
@@ -70,7 +94,11 @@ def take_snapshot_for(instance):
         position = 0
     instance.auto_position = '%s' % position
 
-    process = subprocess.call(['ffmpeg',
+    import tempfile
+    tmpout = tempfile.NamedTemporaryFile(mode='rw+');
+    tmperr = tempfile.NamedTemporaryFile(mode='rw+');
+        
+    process = subprocess.Popen(['ffmpeg',
         '-i', inp,
         '-an',
         '-ss', instance.auto_position,
@@ -78,9 +106,13 @@ def take_snapshot_for(instance):
         '-vframes', '1',
         '-f', 'image2',
         '-y', outp,
-    ])
+        ], stdout=tmpout, stderr=tmperr)
+    stdoutdata, stderrdata = process.communicate()
     # there was a problem with the video, (not supported format)
     if process == 1:
+        tmpout.seek(0)
+        tmperr.seek(0)
+        mail_video_errors(tmpout.read(), tmperr.read())
         raise WrongFfmpegFormat('invalid video format')
     return image_name
 
@@ -107,7 +139,12 @@ def get_video_specs(name=None, file=None):
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdoutdata, stderrdata = process.communicate()
 
-    specs = { 'duration': None, 'width': None, 'height': None, 'bitrate': None, 'video': None, 'audio': None }
+    specs = { 'duration': None, 
+              'width': None, 
+              'height': None, 
+              'bitrate': None, 
+              'video': None, 
+              'audio': None }
     m = SPECS_RE.search(stderrdata.replace('\n', '\r'))
     if not m:
         raise MetadataError, stderrdata

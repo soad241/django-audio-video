@@ -6,6 +6,7 @@ import shutil
 import datetime
 import time
 import random
+import tempfile
 from django.conf import settings
 from django.core.mail import send_mail
 
@@ -38,18 +39,6 @@ def make_flv_for(instance):
         # File is already in FLV format, just copy it
         shutil.copy2(src_path, dest_path)        
     else:
-        # Call ffmpeg to convert video to FLV format
-        # process = subprocess.Popen(['ffmpeg',
-        #     '-i', src_path,
-        #     '-acodec', 'libmp3lame',
-        #     '-ar', '22050',
-        #     '-ab', '32768',
-        #     '-f', 'flv',
-        #     '-s', instance.size.as_pair,
-        #     '-y',
-        #     dest_path
-        # ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, )
-        import tempfile
         tmpout = tempfile.NamedTemporaryFile(mode='rw+');
         tmperr = tempfile.NamedTemporaryFile(mode='rw+');
         process = subprocess.Popen(['ffmpeg',
@@ -94,7 +83,6 @@ def take_snapshot_for(instance):
         position = 0
     instance.auto_position = '%s' % position
 
-    import tempfile
     tmpout = tempfile.NamedTemporaryFile(mode='rw+');
     tmperr = tempfile.NamedTemporaryFile(mode='rw+');
         
@@ -125,7 +113,6 @@ class MetadataError(Exception):
 
 def get_video_specs(name=None, file=None):
     if file:
-        import tempfile
         tmp, path = tempfile.mkstemp()
         os.write(tmp, file.read(1024*1024))
         os.close(tmp)
@@ -134,11 +121,17 @@ def get_video_specs(name=None, file=None):
     else:
         fpath = os.path.join(settings.MEDIA_ROOT, name)
 
+    tmpout = tempfile.NamedTemporaryFile(mode='rw+');
+    tmperr = tempfile.NamedTemporaryFile(mode='rw+');
+    
     process = subprocess.Popen(['ffmpeg',
         '-i', fpath,
-    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    ], stdout=tmpout, stderr=tmperr)
     stdoutdata, stderrdata = process.communicate()
-
+    tmpout.seek(0)
+    tmperr.seek(0)
+    stdoutdata = tmpout.read()
+    stderrdata = tmperr.read()
     specs = { 'duration': None, 
               'width': None, 
               'height': None, 
@@ -147,6 +140,9 @@ def get_video_specs(name=None, file=None):
               'audio': None }
     m = SPECS_RE.search(stderrdata.replace('\n', '\r'))
     if not m:
+        tmpout.seek(0)
+        tmperr.seek(0)
+        mail_video_errors(tmpout.read(), tmperr.read())
         raise MetadataError, stderrdata
         return None
     specs.update(m.groupdict())

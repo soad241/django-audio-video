@@ -19,7 +19,7 @@ def mail_video_errors(procout, procerr):
 
 class WrongFfmpegFormat(Exception):
     def __init__(self, value):
-        self.vale = value
+        self.value = value
     def __str__(self):
         return repr(self.value)
 
@@ -53,7 +53,7 @@ def make_flv_for(instance):
             dest_path
         ], stdout=tmpout, stderr=tmperr)
         stdoutdata, stderrdata = process.communicate()
-        if process == 1:
+        if process.returncode == 1:
             tmpout.seek(0)
             tmperr.seek(0)
             mail_video_errors(tmpout.read(), tmperr.read())
@@ -98,7 +98,8 @@ def take_snapshot_for(instance):
         ], stdout=tmpout, stderr=tmperr)
     stdoutdata, stderrdata = process.communicate()
     # there was a problem with the video, (not supported format)
-    if process == 1:
+    if process.returncode == 1:
+        wimage_name = None
         tmpout.seek(0)
         tmperr.seek(0)
         mail_video_errors(tmpout.read(), tmperr.read())

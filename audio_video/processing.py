@@ -13,7 +13,10 @@ from django.core.mail import send_mail
 def mail_video_errors(procout, procerr):
     message = '\nError:\n' +  procerr
     message += '\nOutput:\n' + procout
-    if procerr.find('Unknown format') == -1:
+    has_format_error = procerr.find('Unknown format') != -1
+    has_one_file_error =\
+        procerr.find('At least one output file must be specified') != -1
+    if (not has_format_error) and (not has_one_file_error):
         send_mail('Video processing error', message, settings.SERVER_EMAIL, 
                   [a[1] for a in settings.ADMINS], fail_silently=False)
 

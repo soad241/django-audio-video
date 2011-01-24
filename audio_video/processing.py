@@ -21,7 +21,7 @@ def mail_video_errors(procout, procerr):
     empty_stream_error =\
         procerr.find('Broken FLV file, which says no streams present') != -1
     if (not has_format_error) and (not has_one_file_error) and \
-            (not has_file_empty_error) and (not empty_stream_error):
+            (not has_file_empty_error) and (not empty_stream_error:
         send_mail('Video processing error', message, settings.SERVER_EMAIL, 
                   [a[1] for a in settings.ADMINS], fail_silently=False)
 
@@ -30,13 +30,6 @@ class WrongFfmpegFormat(Exception):
         self.value = value
     def __str__(self):
         return repr(self.value)
-
-class EmptyVideo(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-
 
 def make_flv_for(instance):
     """Create a Flash movie file for given Video model instance.
@@ -139,8 +132,6 @@ def get_video_specs(name=None, file=None):
     else:
         fpath = os.path.join(settings.MEDIA_ROOT, name)
 
-    if os.path.getsize(fpath) < 200:
-        raise EmptyVideo('the video is empty')
 
     tmpout = tempfile.NamedTemporaryFile(mode='rw+');
     tmperr = tempfile.NamedTemporaryFile(mode='rw+');

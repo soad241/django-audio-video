@@ -21,7 +21,7 @@ def mail_video_errors(procout, procerr):
     empty_stream_error =\
         procerr.find('Broken FLV file, which says no streams present') != -1
     if (not has_format_error) and (not has_one_file_error) and \
-            (not has_file_empty_error) and (not empty_stream_error:
+            (not has_file_empty_error) and (not empty_stream_error):
         send_mail('Video processing error', message, settings.SERVER_EMAIL, 
                   [a[1] for a in settings.ADMINS], fail_silently=False)
 

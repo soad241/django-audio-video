@@ -1,6 +1,6 @@
 {% load main_tags %}
 <script type="text/javascript" src="{{ media_url }}jwplayer/jwplayer.js"></script>
-<object id="player" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" name="player" width="328" height="200"> 
+<object id="player" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" name="player" width="{% get_video_size_width metadata %}" height="{% get_video_size_height metadata %}"> 
 		<param name="movie" value="player.swf" /> 
 		<param name="allowfullscreen" value="true" /> 
 		<param name="allowscriptaccess" value="always" /> 
@@ -10,8 +10,8 @@
 			id="player2"
 			name="player2"
 			src="{{media_url}}jwplayer/player.swf" 
-			width="328" 
-			height="200"
+			width="{% get_video_size_width metadata %}" 
+			height="{% get_video_size_height metadata %}"
 			allowscriptaccess="always" 
 			allowfullscreen="true"
 			flashvars="file={{ media_url }}{{ video.flv_file }}&image={% get_video_thumbnail metadata video.splash_image %}" 

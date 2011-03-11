@@ -1,42 +1,19 @@
-<script type="text/javascript" src="/static/audio_video/flowplayer/flowplayer.js"></script>
-
-<script type="text/javascript">
-$(function () {
-    flowplayer('video-{{ video.id }}',
-        {
-            src: '{{ media_url }}audio_video/flowplayer/flowplayer.swf',
-            width: {{ metadata.width }},
-            height: {{ metadata.height|add:"24" }}
-        },
-        {
-            clip: {
-                url: '{{ media_url }}{{ video.flv_file }}',
-                scaling: 'orig',
-                accelerated: true,
-                autoPlay: true,
-                provider: '{{ provider }}'
-            },
-            plugins: {
-                {% ifequal provider 'lighttpd' %}
-                lighttpd: {
-                    url: '{{ media_url }}audio_video/flowplayer/flowplayer.pseudostreaming.swf'
-                }
-                {% endifequal %}
-            }
-        }
-    );
-});
-</script>
-
-<div id="video-{{ video.id }}"
-     class="video"
-     href="{{ media_url }}{{ video.flv_video }}"
-     style="width: {{ metadata.width }}px;
-            height: {{ metadata.height|add:"24" }}px;
-            background-image: url({{ media_url }}{{ video.splash_image }})">
-  <img src="{{ media_url }}audio_video/flowplayer/play_large.png" alt="Play this video" />
-  <div class="info">
-    {{ video.title }}
-    {% if metadata.duration %}<span>duration: {{ metadata.duration }}</span>{% endif %}
-  </div>
-</div>
+{% load main_tags %}
+<script type="text/javascript" src="{{ media_url }}jwplayer/jwplayer.js"></script>
+<object id="player" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" name="player" width="328" height="200"> 
+		<param name="movie" value="player.swf" /> 
+		<param name="allowfullscreen" value="true" /> 
+		<param name="allowscriptaccess" value="always" /> 
+		<param name="flashvars" value="file={{ media_url }}{{ video.flv_file }}&image={% get_video_thumbnail metadata video.splash_image %}" /> 
+		<embed 
+			type="application/x-shockwave-flash"
+			id="player2"
+			name="player2"
+			src="{{media_url}}jwplayer/player.swf" 
+			width="328" 
+			height="200"
+			allowscriptaccess="always" 
+			allowfullscreen="true"
+			flashvars="file={{ media_url }}{{ video.flv_file }}&image={% get_video_thumbnail metadata video.splash_image %}" 
+		/> 
+	</object> 

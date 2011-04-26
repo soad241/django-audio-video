@@ -1,7 +1,6 @@
 from fields import VideoFileField, AudioFileField, DurationField
 from processing import get_video_specs
 from widgets import ReadOnlyWidget
-from gattlib import string_tools
 import signals
 import re
 from django.db import models
@@ -65,35 +64,6 @@ class VideoSize(models.Model):
     def as_pair(self):
         return u'%dx%d' % (self.width, self.height)
 
-
-def upload_to_splash(instance, filename):
-    destination = time.strftime('video/splash/%Y/%m/%d')
-    try:
-        ext = filename.split('.')[-1]
-    except IndexError:
-        ext = ''
-    filename = string_tools.make_random_string()
-    return '{0}/{1}.{2}'.format(destination, filename, ext)
-
-def upload_to_video(instance, filename):
-    destination = time.strftime('video/upload/%Y/%m/%d')
-    try:
-        ext = filename.split('.')[-1]
-    except IndexError:
-        ext = ''
-    filename = string_tools.make_random_string()
-    return '{0}/{1}.{2}'.format(destination, filename, ext)
-
-def upload_to_flv(instance, filename):
-    destination = time.strftime('video/upload/%Y/%m/%d')
-    try:
-        ext = filename.split('.')[-1]
-    except IndexError:
-        ext = ''
-    filename = string_tools.make_random_string()
-    return '{0}/{1}.{2}'.format(destination, filename, ext)
-
-
 class Video(models.Model):
     """
     Store a video file and automatically maintain a Flash Video (.flv) version for playback.
@@ -101,10 +71,10 @@ class Video(models.Model):
     title = models.CharField(_('title'), max_length=120)
     description = models.TextField(_('description'), blank=True)
     size = models.ForeignKey(VideoSize, verbose_name=_('size'))
-    upload_file = VideoFileField(_('upload video file'), upload_to=upload_to_video)
-    flv_file = VideoFileField(_('final video file'), upload_to=upload_to_flv, blank=True,
+    upload_file = VideoFileField(_('upload video file'), upload_to='video/upload/%Y/%m/%d')
+    flv_file = VideoFileField(_('final video file'), upload_to='video/flv/%Y/%m/%d', blank=True,
         duration_field='duration', width_field='width', height_field='height', read_only=True)
-    splash_image = models.ImageField(_('splash image'), upload_to=upload_to_splash, blank=True)
+    splash_image = models.ImageField(_('splash image'), upload_to='video/splash/%Y/%m/%d', blank=True)
     auto_position = models.CharField(_('capture splash image at'), max_length=12, blank=True,
         help_text=u"To capture a splash image from the video, enter video position in seconds "
                   u"or in hh:mm:ss[.xxx] format. Auto-capture would not occur if this field "

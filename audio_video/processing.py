@@ -57,6 +57,8 @@ def make_flv_for(instance):
             '-ar', '22050',
             '-ab', '32768',
             '-f', 'flv',
+            '-b', '200',
+            '-r', '22',
             '-s', instance.size.as_pair,
             '-y',
             dest_path

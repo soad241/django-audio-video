@@ -6,11 +6,14 @@ import re
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-
+from django.conf import settings
 from flv_reader import FLVReader
 import datetime
 import os
 import subprocess
+
+from django.core.files.storage import FileSystemStorage
+fs = FileSystemStorage(location=settings.VIDEOS_TEMP_DIR)
 
 def get_duration_from_video(video):
     duration = video.flv_file._get_metadata()['duration']
@@ -71,20 +74,46 @@ class Video(models.Model):
     title = models.CharField(_('title'), max_length=120)
     description = models.TextField(_('description'), blank=True)
     size = models.ForeignKey(VideoSize, verbose_name=_('size'))
-    upload_file = VideoFileField(_('upload video file'), upload_to='video/upload/%Y/%m/%d')
-    flv_file = VideoFileField(_('final video file'), upload_to='video/flv/%Y/%m/%d', blank=True,
-        duration_field='duration', width_field='width', height_field='height', read_only=True)
-    splash_image = models.ImageField(_('splash image'), upload_to='video/splash/%Y/%m/%d', blank=True)
-    auto_position = models.CharField(_('capture splash image at'), max_length=12, blank=True,
-        help_text=u"To capture a splash image from the video, enter video position in seconds "
-                  u"or in hh:mm:ss[.xxx] format. Auto-capture would not occur if this field "
-                  u"is empty or if an image file has been selected for upload.")
+    upload_file = VideoFileField(
+        _('upload video file'),
+        upload_to='video/upload/%Y/%m/%d',
+        storage=fs)
+    flv_file = VideoFileField(
+        _('final video file'),
+        upload_to='video/flv/%Y/%m/%d',
+        blank=True,
+        duration_field='duration',
+        width_field='width',
+        height_field='height',
+        read_only=True,
+        storage=fs)
+    splash_image = models.ImageField(
+        _('splash image'),
+        upload_to='video/splash/%Y/%m/%d',
+        blank=True,
+        storage=fs)
+    auto_position = models.CharField(
+        _('capture splash image at'),
+        max_length=12, blank=True,
+        help_text=u"To capture a splash image from the video, enter video \
+                    position in seconds "
+        u"or in hh:mm:ss[.xxx] format. Auto-capture would not occur if \
+          this field "
+        u"is empty or if an image file has been selected for upload.")
     date = models.DateTimeField(_('release date'), blank=True, null=True)
     tags = TagField(verbose_name=_('tags'), help_text=tagfield_help_text)
     duration = DurationField(_('duration'), blank=True, null=True)
     width = models.PositiveIntegerField(_('width'), blank=True, null=True)
     height = models.PositiveIntegerField(_('height'), blank=True, null=True)
 
+
+    def size_dict(self):
+        return {'width': '%s' % self.width , 'height': '%s' % self.height}
+
+    def size_str(self):
+        return '%sx%s' % (self.width, self.height)
+    
+    
     class Meta:
         verbose_name = _('video')
         verbose_name_plural = _('videos')
@@ -129,7 +158,8 @@ class Audio(models.Model):
     """
     title = models.CharField(_('title'), max_length=40)
     description = models.TextField(_('description'), blank=True)
-    file = AudioFileField(_('audio file'), upload_to='audio/%Y/%m/%d', duration_field='duration', bitrate_field='bitrate')
+    file = AudioFileField(_('audio file'), upload_to='audio/%Y/%m/%d',
+                          duration_field='duration', bitrate_field='bitrate')
     date = models.DateTimeField(_('release date'), blank=True, null=True)
     tags = TagField(verbose_name=_('tags'), help_text=tagfield_help_text)
     duration = DurationField(_('duration'), blank=True, null=True)

@@ -10,7 +10,6 @@ import tempfile
 from django.conf import settings
 from django.core.mail import send_mail
 
-#from main.ftp_utils import _upload_ftp
 
 def mail_video_errors(procout, procerr):
     message = '\nError:\n' +  procerr
@@ -168,13 +167,10 @@ def get_video_specs(name=None, file=None):
         raise MetadataError, stderrdata
         return None
     specs.update(m.groupdict())
-
     m = VIDEO_RE.search(stderrdata)
     if m:
         specs.update(m.groupdict())
-
     m = AUDIO_RE.search(stderrdata)
     if m:
         specs.update(m.groupdict())
-
     return specs

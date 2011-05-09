@@ -11,6 +11,7 @@ from flv_reader import FLVReader
 import datetime
 import os
 import subprocess
+from main.ftp_utils import _upload_ftp
 
 from django.core.files.storage import FileSystemStorage
 fs = FileSystemStorage(location=settings.VIDEOS_TEMP_DIR)
@@ -90,8 +91,7 @@ class Video(models.Model):
     splash_image = models.ImageField(
         _('splash image'),
         upload_to='video/splash/%Y/%m/%d',
-        blank=True,
-        storage=fs)
+        blank=True)
     auto_position = models.CharField(
         _('capture splash image at'),
         max_length=12, blank=True,
@@ -108,10 +108,26 @@ class Video(models.Model):
 
 
     def size_dict(self):
-        return {'width': '%s' % self.width , 'height': '%s' % self.height}
+        w = self.width
+        h = self.height
+        if w > 440:
+            w  = float(w)
+            h = float(h)
+            delta = (w - 440)/w
+            w = 440
+            h = int(h - (h*delta))
+        return {'width': '%s' % w , 'height': '%s' % h}
 
     def size_str(self):
-        return '%sx%s' % (self.width, self.height)
+        w = self.width
+        h = self.height
+        if w > 440:
+            w  = float(w)
+            h = float(h)
+            delta = (w - 440)/w
+            w = 440
+            h = int(h - (h*delta))
+        return '%sx%s' % (w, h)
     
     
     class Meta:
@@ -128,6 +144,18 @@ class Video(models.Model):
         if hasattr(self, '_metadata'):
             del self._metadata
 
+    def sync_ftp(self):
+        _upload_ftp(self.upload_file.name,
+                    base_root=settings.VIDEOS_TEMP_DIR)
+        _upload_ftp(self.flv_file.name, base_root=settings.VIDEOS_TEMP_DIR)
+        _upload_ftp(self.splash_image.name,
+                    base_root=settings.VIDEOS_TEMP_DIR)
+    def delete_local_files(self):
+        import os
+        os.remove(settings.VIDEOS_TEMP_DIR+self.upload_file.name)
+        os.remove(settings.VIDEOS_TEMP_DIR+self.flv_file.name)
+        os.remove(settings.VIDEOS_TEMP_DIR+self.splash_image.name)
+        
     @models.permalink
     def get_absolute_url(self):
         return ('video', [self.id])

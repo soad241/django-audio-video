@@ -40,7 +40,6 @@ def make_flv_for(instance):
     upload_to = time.strftime(instance.flv_file.field.upload_to)
     dest_name = os.path.join(upload_to, os.path.basename(path) + '.flv')
     dest_path = os.path.join(settings.MEDIA_ROOT, dest_name)
-    
     try:
         os.makedirs(os.path.dirname(dest_path))
     except:
@@ -97,7 +96,6 @@ def take_snapshot_for(instance):
 
     tmpout = tempfile.NamedTemporaryFile(mode='rw+');
     tmperr = tempfile.NamedTemporaryFile(mode='rw+');
-        
     process = subprocess.Popen(['ffmpeg',
         '-i', inp,
         '-an',

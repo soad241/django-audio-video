@@ -96,8 +96,8 @@ class Video(models.Model):
         if not self.id:
             self.date = datetime.datetime.now()
         super(Video, self).save(**kwargs)
-        if hasattr(self, '_metadata'):
-            del self._metadata
+        #if hasattr(self, '_metadata'):
+        #    del self._metadata
 
         
     @models.permalink

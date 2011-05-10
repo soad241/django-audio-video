@@ -10,7 +10,6 @@ import tempfile
 from django.conf import settings
 from django.core.mail import send_mail
 
-
 def mail_video_errors(procout, procerr):
     message = '\nError:\n' +  procerr
     message += '\nOutput:\n' + procout
@@ -37,26 +36,19 @@ def make_flv_for(instance):
     """
     src_name = instance.upload_file.name
     path, ext = os.path.splitext(src_name)
-    src_path = os.path.join(settings.VIDEOS_TEMP_DIR, src_name)
+    src_path = os.path.join(settings.MEDIA_ROOT, src_name)
     upload_to = time.strftime(instance.flv_file.field.upload_to)
     dest_name = os.path.join(upload_to, os.path.basename(path) + '.flv')
-    dest_path = os.path.join(settings.VIDEOS_TEMP_DIR, dest_name)
+    dest_path = os.path.join(settings.MEDIA_ROOT, dest_name)
+    
     try:
         os.makedirs(os.path.dirname(dest_path))
     except:
         pass
     if ext == '.flv':
         # File is already in FLV format, just copy it
-        try:
-            os.makedirs(os.path.dirname(dest_path))
-        except:
-            pass
         shutil.copy2(src_path, dest_path)        
     else:
-        try:
-            os.makedirs(os.path.dirname(dest_path))
-        except:
-            pass
         tmpout = tempfile.NamedTemporaryFile(mode='rw+');
         tmperr = tempfile.NamedTemporaryFile(mode='rw+');
         process = subprocess.Popen(['ffmpeg',
@@ -89,8 +81,9 @@ def take_snapshot_for(instance):
     path, ext = os.path.splitext(flv.name)
     upload_to = time.strftime(instance.splash_image.field.upload_to)
     image_name = os.path.join(upload_to, os.path.basename(path) + '.jpg')
-    inp = os.path.join(settings.VIDEOS_TEMP_DIR, flv.name)
-    outp = os.path.join(settings.VIDEOS_TEMP_DIR, image_name)
+    
+    inp = os.path.join(settings.MEDIA_ROOT, flv.name)
+    outp = os.path.join(settings.MEDIA_ROOT, image_name)
     try:
         os.makedirs(os.path.dirname(outp))
     except:
@@ -139,7 +132,7 @@ def get_video_specs(name=None, file=None):
         #os.unlink(path)
         fpath = path
     else:
-        fpath = os.path.join(settings.VIDEOS_TEMP_DIR, name)
+        fpath = os.path.join(settings.MEDIA_ROOT, name)
 
 
     tmpout = tempfile.NamedTemporaryFile(mode='rw+');

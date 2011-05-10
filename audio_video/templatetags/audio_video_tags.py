@@ -19,15 +19,15 @@ def _render_audio(instance, params):
 
 def _render_video(instance, params):
     t = template.loader.get_template('audio_video/video/%s/include.html' % settings.VIDEO_PLAYER)
-    #try:
-    #metadata = instance.metadata()
-    #except:
-    #    t = template.loader.get_template('audio_video/video/error.html')
-    #    ctx = Context({})
-    #    return t.render(ctx)
+    try:
+        metadata = instance.metadata()
+    except:
+        t = template.loader.get_template('audio_video/video/error.html')
+        ctx = Context({})
+        return t.render(ctx)
     ctx = Context({
         'video': instance,
-        #'metadata': metadata,
+        'metadata': metadata,
         'media_url': settings.MEDIA_URL,
         'provider': settings.VIDEO_PROVIDER,
     })

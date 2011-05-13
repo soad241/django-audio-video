@@ -12,6 +12,9 @@ import datetime
 import os
 import subprocess
 
+from django.core.files.storage import FileSystemStorage
+fs = FileSystemStorage(location=settings.VIDEOS_TEMP_DIR)
+
 def get_duration_from_video(video):
     duration = video.flv_file._get_metadata()['duration']
     duration_re = re.compile(r'(\d\d):(\d\d):(\d\d).(\d\d)')
@@ -71,10 +74,21 @@ class Video(models.Model):
     title = models.CharField(_('title'), max_length=120)
     description = models.TextField(_('description'), blank=True)
     size = models.ForeignKey(VideoSize, verbose_name=_('size'))
-    upload_file = VideoFileField(_('upload video file'), upload_to='video/upload/%Y/%m/%d')
-    flv_file = VideoFileField(_('final video file'), upload_to='video/flv/%Y/%m/%d', blank=True,
-        duration_field='duration', width_field='width', height_field='height', read_only=True)
-    splash_image = models.ImageField(_('splash image'), upload_to='video/splash/%Y/%m/%d', blank=True)
+    upload_file = VideoFileField(_('upload video file'),
+                                 upload_to='video/upload/%Y/%m/%d',
+                                 storage=fs)
+    flv_file = VideoFileField(_('final video file'),
+                              upload_to='video/flv/%Y/%m/%d',
+                              blank=True,
+                              duration_field='duration',
+                              width_field='width',
+                              height_field='height',
+                              read_only=True,
+                              storage=fs)
+    splash_image = models.ImageField(_('splash image'),
+                                     upload_to='video/splash/%Y/%m/%d',
+                                     blank=True,
+                                     storage=fs)
     auto_position = models.CharField(_('capture splash image at'), max_length=12, blank=True,
         help_text=u"To capture a splash image from the video, enter video position in seconds "
                   u"or in hh:mm:ss[.xxx] format. Auto-capture would not occur if this field "

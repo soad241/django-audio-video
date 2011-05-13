@@ -10,6 +10,8 @@ import tempfile
 from django.conf import settings
 from django.core.mail import send_mail
 
+    
+
 def mail_video_errors(procout, procerr):
     message = '\nError:\n' +  procerr
     message += '\nOutput:\n' + procout
@@ -36,10 +38,10 @@ def make_flv_for(instance):
     """
     src_name = instance.upload_file.name
     path, ext = os.path.splitext(src_name)
-    src_path = os.path.join(settings.MEDIA_ROOT, src_name)
+    src_path = os.path.join(settings.VIDEOS_TEMP_DIR, src_name)
     upload_to = time.strftime(instance.flv_file.field.upload_to)
     dest_name = os.path.join(upload_to, os.path.basename(path) + '.flv')
-    dest_path = os.path.join(settings.MEDIA_ROOT, dest_name)
+    dest_path = os.path.join(settings.VIDEOS_TEMP_DIR, dest_name)
     try:
         os.makedirs(os.path.dirname(dest_path))
     except:
@@ -68,8 +70,6 @@ def make_flv_for(instance):
             tmperr.seek(0)
             mail_video_errors(tmpout.read(), tmperr.read())
             raise WrongFfmpegFormat('invalid video format')
-
-    # Add FLV metadata to video file
     subprocess.call(['flvtool2', '-U', dest_path])
     return dest_name
 
@@ -81,8 +81,8 @@ def take_snapshot_for(instance):
     upload_to = time.strftime(instance.splash_image.field.upload_to)
     image_name = os.path.join(upload_to, os.path.basename(path) + '.jpg')
     
-    inp = os.path.join(settings.MEDIA_ROOT, flv.name)
-    outp = os.path.join(settings.MEDIA_ROOT, image_name)
+    inp = os.path.join(settings.VIDEOS_TEMP_DIR, flv.name)
+    outp = os.path.join(settings.VIDEOS_TEMP_DIR, image_name)
     try:
         os.makedirs(os.path.dirname(outp))
     except:
@@ -130,7 +130,7 @@ def get_video_specs(name=None, file=None):
         #os.unlink(path)
         fpath = path
     else:
-        fpath = os.path.join(settings.MEDIA_ROOT, name)
+        fpath = os.path.join(settings.VIDEOS_TEMP_DIR, name)
 
 
     tmpout = tempfile.NamedTemporaryFile(mode='rw+');

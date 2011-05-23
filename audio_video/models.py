@@ -13,8 +13,8 @@ import os
 import subprocess
 
 from django.core.files.storage import FileSystemStorage
-#fs = FileSystemStorage(location=settings.VIDEOS_TEMP_DIR)
-fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+fs = FileSystemStorage(location=settings.VIDEOS_TEMP_DIR)
+#fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 def get_duration_from_video(video):
     duration = video.flv_file._get_metadata()['duration']

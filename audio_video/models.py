@@ -15,6 +15,9 @@ import subprocess
 from django.core.files.storage import FileSystemStorage
 fs = FileSystemStorage(location=settings.VIDEOS_TEMP_DIR)
 #fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+from athumb.fields import ImageWithThumbsField
+from athumb.backends.s3boto import S3BotoStorage_AllPublic
+PUBLIC_MEDIA_BUCKET = S3BotoStorage_AllPublic(settings.AWS_STORAGE_BUCKET_NAME)
 
 def get_duration_from_video(video):
     duration = video.flv_file._get_metadata()['duration']
@@ -86,10 +89,16 @@ class Video(models.Model):
                               height_field='height',
                               read_only=True,
                               storage=fs)
-    splash_image = models.ImageField(_('splash image'),
-                                     upload_to='video/splash/%Y/%m/%d',
-                                     blank=True,
-                                     storage=fs)
+    splash_image = ImageWithThumbsField(
+        _('splash image'),
+        upload_to='video/splash/%Y/%m/%d',
+        blank=True, null=True,
+        storage=PUBLIC_MEDIA_BUCKET,
+        thumbs=(
+        ('90x90', {'size': (90, 90), 'crop':False, 'upscale':False}),
+        ('130x100', {'size': (200,150), 'crop':'center', 'upscale':True}),
+        ('130x100_crop', {'size': (130,100), 'crop':'center', 'upscale':False}),
+        ))
     auto_position = models.CharField(_('capture splash image at'), max_length=12, blank=True,
         help_text=u"To capture a splash image from the video, enter video position in seconds "
                   u"or in hh:mm:ss[.xxx] format. Auto-capture would not occur if this field "

@@ -98,6 +98,7 @@ class Video(models.Model):
         ('90x90', {'size': (90, 90), 'crop':False, 'upscale':False}),
         ('130x100', {'size': (200,150), 'crop':'center', 'upscale':True}),
         ('130x100_crop', {'size': (130,100), 'crop':'center', 'upscale':False}),
+        ('400x400', {'size': (400, 400), 'crop':False, 'upscale':False}),
         ))
     auto_position = models.CharField(_('capture splash image at'), max_length=12, blank=True,
         help_text=u"To capture a splash image from the video, enter video position in seconds "

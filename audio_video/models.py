@@ -93,6 +93,7 @@ class Video(models.Model):
         _('splash image'),
         upload_to='video/splash/%Y/%m/%d',
         blank=True, null=True,
+        thumbnail_format='jpg',
         storage=PUBLIC_MEDIA_BUCKET,
         thumbs=(
         ('90x90', {'size': (90, 90), 'crop':False, 'upscale':False}),

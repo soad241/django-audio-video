@@ -16,7 +16,7 @@ def upload_to_s3(filename):
     key.close()
 
 def update(sender, instance, created, **kwargs):
-    changed = False
+    changed = True
     if created:
         if not instance.flv_file.name:
             instance.flv_file = make_flv_for(instance)
@@ -24,6 +24,7 @@ def update(sender, instance, created, **kwargs):
             changed = True
             
         try:
+            
             from PIL import Image
             new_splash = take_snapshot_for(instance)
             instance.splash_image = new_splash
@@ -50,5 +51,11 @@ def update(sender, instance, created, **kwargs):
             os.remove(settings.VIDEOS_TEMP_DIR+instance.upload_file.name)
             os.remove(settings.VIDEOS_TEMP_DIR+instance.flv_file.name)
             os.remove(settings.VIDEOS_TEMP_DIR+instance.splash_image.name)
+
+            if instance.splash_image == "":
+                from main.models import UserVideo
+                UserVideo.objects.filter(video=instance).delete()
+                return
+                raise WrongFfmpegFormat
             
 signals.post_save.connect(update, sender=Video)

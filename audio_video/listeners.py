@@ -1,3 +1,4 @@
+
 from models import Video
 from processing import make_flv_for, take_snapshot_for, WrongFfmpegFormat
 from django.core.mail import send_mail
@@ -16,6 +17,8 @@ def upload_to_s3(filename):
     key.close()
 
 def update(sender, instance, created, **kwargs):
+    if not settings.UPLOAD_VIDEOS_TO_S3:
+        return
     changed = True
     if created:
         if not instance.flv_file.name:

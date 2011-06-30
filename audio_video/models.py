@@ -17,7 +17,13 @@ fs = FileSystemStorage(location=settings.VIDEOS_TEMP_DIR)
 #fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 from athumb.fields import ImageWithThumbsField
 from athumb.backends.s3boto import S3BotoStorage_AllPublic
-PUBLIC_MEDIA_BUCKET = S3BotoStorage_AllPublic(settings.AWS_STORAGE_BUCKET_NAME)
+
+if settings.DEFAULT_FILE_STORAGE ==\
+        "django.core.files.storage.FileSystemStorage":
+    PUBLIC_MEDIA_BUCKET = FileSystemStorage()
+else:
+    PUBLIC_MEDIA_BUCKET = S3BotoStorage_AllPublic(settings.AWS_STORAGE_BUCKET_NAME)
+
 
 def get_duration_from_video(video):
     duration = video.flv_file._get_metadata()['duration']

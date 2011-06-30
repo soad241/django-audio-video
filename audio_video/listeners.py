@@ -1,4 +1,3 @@
-
 from models import Video
 from processing import make_flv_for, take_snapshot_for, WrongFfmpegFormat
 from django.core.mail import send_mail
@@ -7,6 +6,9 @@ from django.conf import settings
 from django.conf import settings
 
 def upload_to_s3(filename):
+    if settings.DEFAULT_FILE_STORAGE ==\
+            "django.core.files.storage.FileSystemStorage":
+        return
     from storages.backends.s3boto import S3BotoStorageFile, S3BotoStorage
     import os    
     storage = S3BotoStorage()
@@ -48,6 +50,10 @@ def update(sender, instance, created, **kwargs):
             return
             
         if changed:
+            if settings.DEFAULT_FILE_STORAGE ==\
+                    "django.core.files.storage.FileSystemStorage":
+                return
+
             instance.save()
             upload_to_s3(instance.flv_file.name)
             import os
